@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.13/css/all.css">
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/css/bootstrap-combined.min.css">
+    <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+    
+<div class="wrapper">
+  <header>
+      <div class="logo">HaveFun</div>
+      <div class="search">
+        <i class="fas fa-search"></i>
+        <input type="text" placeholder="Explore your own activities" v-model="placeName" >
+        <span class="forLine"></span>
+      </div>
+    </header>
+  <div id="container">
+    <div class="aside ">
+      <div :class="['location','Features', {active:nowType == 'location'}]" @click="changeFilter('location')">
+        <i class="fas fa-plus"></i>
+        <i class="fas fa-minus"></i>
+        <h3>Location</h3>
+        <div class="content">
+          <select  v-model="selectLocation">
+            <option value="">選擇地區</option>
+           <option :value="vo" v-for="vo in zoneList">{{vo}}</option>
+          </select>
+        </div>
+      </div>
+      <div :class="['date', 'Features', {active:nowType == 'date'}]" @click="changeFilter('date')">
+        <i class="fas fa-plus"></i>
+        <i class="fas fa-minus"></i>
+        <h3>Date</h3>
+        <div class="content">
+          <span>From</span>
+          <input type="date"><br>
+          <span>to</span>
+          <input type="time">
+        </div>  
+      </div>
+      <div :class="['categories', 'Features', {active:nowType == 'categories'}]" @click="changeFilter('categories')">
+        <i class="fas fa-plus"></i>
+        <i class="fas fa-minus"></i>
+        <h3>Categories</h3>
+        <div class="content">
+          <ul>
+            <li>
+              <input type="checkbox" id="free" value="免費參觀" v-model="ifFree">
+              <label for="free">免費參觀</label>
+            </li>
+            <li>
+              <input type="checkbox" id="ticket" value="" v-model="ifFree">
+              <label for="ticket">門票入場</label>
+            </li>
+          </ul>
+          </div>
+      </div>
+    </div>
+    <main>
+      <h2 class="dataCount">共有<span class="resultCount" v-cloak>{{filteredRows.length}}</span> 結果</h2>
+  
+      <div class="tag_wrapper">
+        <ul>
+          <li v-for="(item,index) in tagData" :key="index"  class="tag">{{item==''?'門票入場':item}}<i class="far fa-times-circle" @click="removeTag(index)"></i></li>
+        </ul>
+  <!--       <span class="tag">hahahah <i class="far fa-times-circle"></i></span>
+        <span class="tag">lolololo <i class="far fa-times-circle"></i></span> -->
+      </div>
+      <div class="item_wrapper">
+      <p v-if="filteredRows.length==0">查無資料</p> 
+      <div class="item" v-for="(item, index) in filteredRows.slice(pageStart, pageStart + countOfPage)" :key="index" @click="toSinglePage(item)" v-if="mainContentShow">
+  <!--     <div class="item" v-for="(item, index) in dataList" :key="index"> -->
+        <div class="img_box">
+          <img :src="item.Picture1" :alt="item.Picdescribe1">
+        </div>
+        <div class="text_box">
+          <h3>{{item.Name}}</h3>
+          <p>{{item.Add}}</p>
+          <span class="author">{{item.Tel}}</span>
+          <span class="inside_tag">{{item.Ticketinfo == ''? '門票入場' : item.Ticketinfo}}</span>
+          <div class="info">
+            <ul>
+              <li>
+                <i class="fas fa-map-marker-alt"></i>
+                <span>{{item.Zone}}</span>
+              </li>
+              <li>
+                <i class="far fa-calendar-alt"></i>
+                <span>{{item.Opentime}}</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+  
+      <div class="item_detail" v-if="!mainContentShow">
+        <img :src="singleData.Picture1" alt="">
+        <div class="text_box">
+          <h2>{{singleData.Name}}</h2>
+          <span class="author">{{singleData.Tel}}</span>
+          <span class="inside_tag">{{singleData.Ticketinfo == ''? '門票入場' :singleData.Ticketinfo}}</span>
+          <div class="info">
+            <ul>
+              <li>
+                <i class="fas fa-map-marker-alt"></i>
+                <span>{{singleData.Zone}}</span>
+              </li>
+              <li>
+                <i class="far fa-calendar-alt"></i>
+                <span>{{singleData.Opentime}}</span>
+              </li>
+            </ul>
+          </div>
+          <p>
+          {{singleData.Description}}
+          </p>
+        </div>
+        <div class="back" @click="goBack">回上ㄧ頁</div>
+      </div>
+      </div>
+  <!--      <page :list="dataList" v-on:goto="showNowPage"></page> -->
+      <div class="pagination">
+        <ul>
+          <li v-bind:class="{'disabled': (current === 1)}" 
+              @click.prevent="setPage(current-1)"><a href="#">Prev</a></li>
+          <li v-for="vo in totalPage"
+              v-bind:class="{'active': (current === (vo))}" 
+              @click.prevent="setPage(vo)"><a href="#">{{vo}}</a></li>
+          <li v-bind:class="{'disabled': (current === totalPage)}" 
+              @click.prevent="setPage(current+1)"><a href="#">Next</a></li>
+        </ul>
+      </div>
+    </main>
+  </div>
+  </div>  
+</body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.10/vue.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.18.0/axios.min.js"></script>
+<script src="public/js/all.js"></script>
+</html>
